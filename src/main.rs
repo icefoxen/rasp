@@ -1,3 +1,6 @@
+extern crate rasp;
+
+
 fn main() {
-    println!("Hello, world!");
+    rasp::test();
 }
