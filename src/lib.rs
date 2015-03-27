@@ -21,7 +21,6 @@ pub struct VmContext<'a> {
 
 impl <'a> VmContext<'a> {
 	fn next_symbol(&mut self) -> SymbolId {
-		// The clone() here feels stupid, but, it works.
 		let sym = self.next_symbol;
 		self.next_symbol += 1;
 		sym
@@ -50,6 +49,9 @@ impl std::fmt::Display for Val {
 			Val::Int(ref i)  => formatter.write_str(&format!("{}", i)),
 			Val::Nil => formatter.write_str("Nil"),
 			Val::Cons(ref car, ref cdr) => start_write_cons(car, cdr, formatter),
+			// Interestingly, we can now no longer display interned symbols 'cause we can't
+			// get the associated VM...
+			// WHY did I think that would make life easier?
 			Val::Symbol(ref _handle) => formatter.write_str("symbol")
 		}
 	}
