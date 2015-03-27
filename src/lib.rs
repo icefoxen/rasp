@@ -15,7 +15,7 @@ fn start_write_cons(car : &Val, cdr : &Val, formatter : &mut std::fmt::Formatter
 
 fn finish_write_cons(val : &Val, formatter : &mut std::fmt::Formatter) -> Result {
 	match *val {
-		// If we get another cons cell, we write the first item, a space, then recurse
+		// If we get another cons cell, we write the first item, then recurse
 		Val::Cons(ref car, ref cdr) => formatter.write_str(&format!(" {}", car)).and(finish_write_cons(cdr, formatter)),
 		// If we get nil, we end the list
 		Val::Nil => formatter.write_str(")"),
@@ -37,11 +37,5 @@ impl std::fmt::Display for Val {
 pub fn cons(car : Val, cdr : Val) -> Val {
 	let ca = Box::new(car);
 	let cd = Box::new(cdr);
-	let cell = Val::Cons(ca, cd);
-	cell
-	//Box::new(cell)
-}
-
-pub fn test() {
-	println!("Foo!");
+	Val::Cons(ca, cd)
 }
