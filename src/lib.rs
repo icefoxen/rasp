@@ -78,6 +78,18 @@ pub fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId 
 	id
 }
 
+
+pub fn tokenize(in_str : &mut std::str::Chars, accm : String) -> String {
+	let inner = |chr| {
+		match chr {
+			'0'...'9' => accm.push(chr),
+			_other => (),
+		}
+	};
+	let c = in_str.next();
+	c.map_or(accm, |_v| String::new())
+}
+
 pub fn read<'a>(in_str : &str) -> Val {
 	let mut chars = in_str.chars();
 	let c = chars.next();
