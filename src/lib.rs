@@ -1,16 +1,24 @@
 use std::fmt::*;
+use std::collections;
+
+pub struct SymbolId(i32);
 
 pub enum Val {
 	Int(i32),
 	Nil,
 	Cons(Box<Val>, Box<Val>),
+	Symbol(SymbolId),
+}
+
+pub struct VmContext<'a> {
+	// I THINK the lifetime specifier here says that the &str 
+	// lasts as long as the VmContext does...
+	symbols : std::collections::HashMap<i32, & 'a str>,
 }
 
 fn start_write_cons(car : &Val, cdr : &Val, formatter : &mut std::fmt::Formatter) -> Result {
 	formatter.write_str(&format!("({}", car))
-		.and(
-	finish_write_cons(cdr, formatter)
-	)
+			 .and(finish_write_cons(cdr, formatter))
 }
 
 fn finish_write_cons(val : &Val, formatter : &mut std::fmt::Formatter) -> Result {
@@ -30,6 +38,7 @@ impl std::fmt::Display for Val {
 			Val::Int(ref i)  => formatter.write_str(&format!("{}", i)),
 			Val::Nil => formatter.write_str("Nil"),
 			Val::Cons(ref car, ref cdr) => start_write_cons(car, cdr, formatter),
+			Val::Symbol(ref handle) => formatter.write_str("symbol")
 		}
 	}
 }
@@ -38,4 +47,12 @@ pub fn cons(car : Val, cdr : Val) -> Val {
 	let ca = Box::new(car);
 	let cd = Box::new(cdr);
 	Val::Cons(ca, cd)
+}
+
+fn intern_symbol(ctx : &mut VmContext, name : &str) -> SymbolId {
+	SymbolId(0)
+}
+
+pub fn read() -> Val {
+	Val::Nil
 }
