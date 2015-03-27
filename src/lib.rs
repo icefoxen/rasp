@@ -3,6 +3,16 @@ use std::collections;
 
 pub struct SymbolId(i32);
 
+
+impl Clone for SymbolId {
+	// Really now?  Really?
+	// SymbolId is a value type, essentially.  Why do I have to do this?
+	fn clone(&self) -> SymbolId {
+		let SymbolId(i) = *self;
+		SymbolId(i)
+	}
+}
+
 impl SymbolId {
 	fn incr(&self) -> SymbolId {
 		let SymbolId(num) = *self;
@@ -20,14 +30,16 @@ pub enum Val {
 pub struct VmContext<'a> {
 	// I THINK the lifetime specifier here says that the &str 
 	// lasts as long as the VmContext does...
-	symbols : std::collections::HashMap<i32, & 'a str>,
+	symbols : std::collections::HashMap<i32, &'a str>,
 	next_symbol : SymbolId,
 }
 
-impl VmContext<'a> {
-	fn next_symbol(&self) -> SymbolId {
-		let sym = self.next_symbol.incr();
-		self.next_symbol = sym;
+
+impl <'a> VmContext<'a> {
+	fn next_symbol<'a>(&mut self) -> SymbolId {
+		// The clone() here feels stupid, but, it works.
+		let sym = self.next_symbol.clone();
+		self.next_symbol = self.next_symbol.incr();
 		sym
 	}
 }
@@ -66,9 +78,7 @@ pub fn cons(car : Val, cdr : Val) -> Val {
 }
 
 fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId {
-	let id = SymbolId(3);
-	//let mut map = std::collections::HashMap::new();
-	//let ref mut map = ctx.symbols;
+	let id = ctx.next_symbol();
 	ctx.symbols.insert(3, name);
 	//ctx.symbols.insert(id, name);
 	id
