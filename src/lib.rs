@@ -8,7 +8,7 @@ pub enum Val {
 	Int(i32),
 	Nil,
 	Cons(Box<Val>, Box<Val>),
-	Symbol(SymbolId),
+	Symbol(String),
 }
 
 pub struct VmContext<'a> {
@@ -59,7 +59,7 @@ impl std::fmt::Display for Val {
 			// Interestingly, we can now no longer display interned symbols 'cause we can't
 			// get the associated VM...
 			// WHY did I think that would make life easier?
-			Val::Symbol(ref _handle) => formatter.write_str("symbol")
+			Val::Symbol(ref name) => formatter.write_str(name)
 		}
 	}
 }
@@ -78,6 +78,12 @@ pub fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId 
 	id
 }
 
-pub fn read<'a>(ctx : &mut VmContext<'a>, instr : &str) -> Val {
-	Val::Nil
+pub fn read<'a>(in_str : &str) -> Val {
+	let mut chars = in_str.chars();
+	let c = chars.next();
+	match c {
+		Some('0') => Val::Int(0),
+		Some(_stuff) => Val::Nil,
+		None => Val::Nil
+	}
 }
