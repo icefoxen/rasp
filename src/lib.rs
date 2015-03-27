@@ -25,6 +25,13 @@ impl <'a> VmContext<'a> {
 		self.next_symbol += 1;
 		sym
 	}
+
+	pub fn new() -> VmContext<'a> {
+		VmContext {
+			next_symbol : 0,
+			symbols : HashMap::new(),
+		}
+	}
 }
 
 fn start_write_cons(car : &Val, cdr : &Val, formatter : &mut std::fmt::Formatter) -> Result {
@@ -71,6 +78,6 @@ pub fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId 
 	id
 }
 
-pub fn read() -> Val {
+pub fn read<'a>(ctx : &mut VmContext<'a>, instr : &str) -> Val {
 	Val::Nil
 }
