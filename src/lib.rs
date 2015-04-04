@@ -1,3 +1,5 @@
+mod token;
+
 use std::fmt::*;
 use std::collections::HashMap;
 
@@ -56,9 +58,6 @@ impl std::fmt::Display for Val {
 			Val::Int(ref i)  => formatter.write_str(&format!("{}", i)),
 			Val::Nil => formatter.write_str("Nil"),
 			Val::Cons(ref car, ref cdr) => start_write_cons(car, cdr, formatter),
-			// Interestingly, we can now no longer display interned symbols 'cause we can't
-			// get the associated VM...
-			// WHY did I think that would make life easier?
 			Val::Symbol(ref name) => formatter.write_str(name)
 		}
 	}
@@ -79,23 +78,61 @@ pub fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId 
 }
 
 
-pub fn tokenize(in_str : &mut std::str::Chars, accm : String) -> String {
-	let inner = |chr| {
-		match chr {
-			'0'...'9' => accm.push(chr),
-			_other => (),
-		}
-	};
-	let c = in_str.next();
-	c.map_or(accm, |_v| String::new())
-}
-
 pub fn read<'a>(in_str : &str) -> Val {
 	let mut chars = in_str.chars();
+	token::tokenize("Some string");
+	tokenize(&mut chars);
 	let c = chars.next();
 	match c {
 		Some('0') => Val::Int(0),
 		Some(_stuff) => Val::Nil,
 		None => Val::Nil
 	}
+}
+
+
+pub fn tokenize_num(in_str : &str) -> (i32, i32) {
+	(0,0)
+}
+
+pub enum Token {
+	LParen,
+	RParen,
+	Number(i32),
+	Symbol(String),
+}
+
+impl std::fmt::Display for Token {
+	fn fmt(&self, formatter : &mut std::fmt::Formatter) -> Result {
+		match *self {
+			Token::LParen => formatter.write_str("LParen"),
+			Token::RParen => formatter.write_str("RParen"),
+			Token::Number(ref i) => formatter.write_str(&format!("Number({})", i)),
+			Token::Symbol(ref s) => formatter.write_str(&format!("Symbol({})", s)),
+		}
+	}
+}
+
+pub fn tokenize(in_str : &mut std::str::Chars) -> Vec<Token> {
+	let mut accm = String::new();
+	let mut tokens : Vec<Token> = Vec::new();
+	{
+		// The scope block here lets the 'inner' closure borrow accm,
+		// then give it back at the end of the scope.
+		let mut inner = |chr| {
+			match chr {
+				'(' => Token::LParen,
+				'0'...'9' => Token::Number(1),
+				_other => Token::RParen,
+			}
+		};
+		let c_maybe = in_str.next();
+		let c = c_maybe.expect("Failed getting a char or something from option...");
+		inner(c);
+	};
+	println!("Accm: {}", accm);
+	for tok in &tokens {
+		println!("Token: {}", tok);
+	}
+	tokens
 }
