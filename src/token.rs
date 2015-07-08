@@ -37,6 +37,10 @@ pub fn tokenize2(in_str : &str) {
 }
 
 
+// Derp.  Go off of first character.  If it's a paren, it's a paren.
+// If it's a string or character, read that, then parse it.
+// If it's something starting a number, read number, then parse it.  If not a number, then a symbol.
+// Otherwise, it's a symbol.
 pub fn tokenize(in_str : &mut std::str::Chars) -> Vec<Token> {
 	let mut accm = String::new();
 	let mut tokens : Vec<Token> = Vec::new();
