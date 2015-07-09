@@ -9,7 +9,7 @@ fn main() {
 
     //let mut ctx = rasp::VmContext::new();
 
-    let in_str = "(10 30 20)";
+    let in_str = "(10 30 foo 20 bop )";
     let out_str = rasp::read(in_str);
     println!("Read thing: {}", out_str);
     //println!("Type stuff in:");

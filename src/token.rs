@@ -23,38 +23,97 @@ impl std::fmt::Display for Token {
 	}
 }
 pub fn tokenize_num<'a>(start : char, rest : &'a mut std::str::Chars)  -> i32 {
-	//let numberString = rest.take_while(|chr| *chr != ' ').collect();
-	//let fullString = start.to_string() + numberString;
-	0
+	let mut accm = String::new();
+	accm.push(start);
+	for c in rest {
+		match c {
+			' ' => break,
+			')' => break,
+			other => accm.push(other)
+		}
+	};
+	accm.parse().ok().expect("Number expected")
 }
 
 pub fn tokenize_symbol<'a>(start : char, rest : &'a mut std::str::Chars) -> String {
-	start.to_string()
+	let mut accm = String::new();
+	accm.push(start);
+	for c in rest {
+		match c {
+			' ' => break,
+			')' => break,
+			other => accm.push(other)
+		}
+	};
+	accm
 }
+
+fn tokenize_num_(slice : [char]) -> (Token, usize) {
+	let n = match slice.position_elem(' ') {
+		None => slice.len(),
+		Some(i) => i
+	}
+	let subslice = slice[0..n];
+	subslice.parse().ok().expect("Expected a number d00d")
+}
+
+fn tokenize_num_(slice : [char]) -> (Token, usize) {
+	let n = match slice.position_elem(' ') {
+		None => slice.len(),
+		Some(i) => i
+	}
+	let subslice = slice[0..n];
+	subslice.parse().ok().expect("Expected a number d00d")
+}
+
 
 // Tokenize a string by first unpacking it into a Vec<char>
 // and then dealing with each char individually.
 // You'd THINK that an iterator would offer a better way
-// of doing this, but something screwy 
+// of doing this, but something screwy keeps happening
+// with the borrow checker.  And you can't peek iterators,
+// which is sorta important.
 pub fn tokenize_unpack(in_str : &str) -> Vec<Token> {
-	let mut characters : Vec<char> = Vec::new();
-	let mut tokens : Vec<Token> = Vec::new();
-	for chr in in_str.chars() {
-		characters.push(chr);
-	}
-	for i in 0..characters.len() {
-		let x = &characters[0..i];
-		for chr in x {
-			println!("Foo: {}", chr);
-		}
-	}
+    let mut characters : Vec<char> = Vec::new();
+    let mut tokens : Vec<Token> = Vec::new();
+    for chr in in_str.chars() {
+        characters.push(chr);
+    }
+    let mut start_position = 0;
+    let mut end_position = 0;
+    loop {
+    	if endPosition > characters.len() {
+    		break;
+    	}
+
+    	let current_char = characters[start_position];
+    	match current_char {
+			'(' => tokens.push(Token::LParen),
+			')' => tokens.push(Token::RParen),
+			'0'...'9' | '+' | '-' | '.' => 
+				let number, next = tokenize_num_([start_position..]);
+				start_position <- next;
+				Token::Number(number),
+			_other => 
+				tokens.push(Token::Symbol(tokenize_symbol(chr, &mut chars))),
+
+    	}
+    }
 
 
-	//println!("Accm: {}", characters);
-	for tok in &tokens {
-		println!("Token: {}", tok);
-	}
-	tokens
+
+    for i in 0..characters.len() {
+        let x = &characters[0..i];
+        for chr in x {
+            println!("Foo: {}", chr);
+        }
+    }
+
+    //println!("Accm: {}", characters);
+    for tok in &tokens {
+        println!("Token: {}", tok);
+    }
+    tokens
 }
 
 // Derp.  Go off of first character.  If it's a paren, it's a paren.
@@ -64,12 +123,14 @@ pub fn tokenize_unpack(in_str : &str) -> Vec<Token> {
 // Otherwise, it's a symbol.
 pub fn tokenize(in_str : &str) -> Vec<Token> {
 	let mut chars = in_str.chars();
-	let mut accm = String::new();
 	let mut tokens : Vec<Token> = Vec::new();
 	
+	// For SOME reason, just using loop here and unpacking
+	// the option by hand works, but a for loop doesn't work.
+	// So!
 	loop {
-		let maybeChr = chars.next();
-		let chr = match maybeChr {
+		let maybe_chr = chars.next();
+		let chr = match maybe_chr {
 			Some(c) => c,
 			None => break,
 		};
@@ -77,58 +138,10 @@ pub fn tokenize(in_str : &str) -> Vec<Token> {
 			'(' => Token::LParen,
 			')' => Token::RParen,
 			'0'...'9' | '+' | '-' | '.' => Token::Number(tokenize_num(chr, &mut chars)),
-			other => Token::Symbol(tokenize_symbol(chr, &mut chars)),
+			_other => Token::Symbol(tokenize_symbol(chr, &mut chars)),
 		};
 		tokens.push(token);
 	}
-	/*
-	for chr in &mut chars {
-		let token = match chr {
-			'(' => Token::LParen,
-			')' => Token::RParen,
-			'0'...'9' | '+' | '-' | '.' => Token::Number(tokenize_num(chr, &mut chars)),
-			other => Token::Symbol(tokenize_symbol(chr, &mut chars)),
-		};
-		tokens.push(token);
-	}
-	*/
-	/*
-	for chr in chars {
-		let token = match chr {
-			'(' => Token::LParen,
-			')' => Token::RParen,
-			//'0'...'9' | '+' | '-' | '.' => Token::Number(tokenize_num(chr, &mut chars)),
-			//_other => Token::Symbol(tokenize_symbol(chr, &mut chars)),
-			'0'...'9' | '+' | '-' | '.' => {
-				let res : String = chars.take_while(|x| *x != ' ').collect();
-				let num : i32 = res.trim().parse()
-					.ok()
-					.expect("Expected a number");
-				Token::Number(num)
-			},
-			_other => Token::Symbol("whatever".to_string()),
-		};
-		tokens.push(token);
-	}
-	*/
-	/*
-	tokens
-	{
-		// The scope block here lets the 'inner' closure borrow accm,
-		// then give it back at the end of the scope.
-		let mut inner = |chr| {
-			match chr {
-				'(' => Token::LParen,
-				')' => Token::RParen,
-				'0'...'9' | '+' | '-' | '.' => Token::Number(1),
-				_other => Token::RParen,
-			}
-		};
-		let c_maybe = in_str.next();
-		let c = c_maybe.expect("Failed getting a char or something from option...");
-		tokens.push(inner(c));
-	};
-	*/
 	for token in &tokens {
 		println!("Token: {}", token);
 	};

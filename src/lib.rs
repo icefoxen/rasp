@@ -79,8 +79,8 @@ pub fn intern_symbol<'a>(ctx : &mut VmContext<'a>, name : & 'a str) -> SymbolId 
 
 
 pub fn read<'a>(in_str : &str) -> Val {
-	//token::tokenize_unpack(in_str);
-	token::tokenize(in_str);
+	token::tokenize_unpack(in_str);
+	//token::tokenize(in_str);
 	let mut chars = in_str.chars();
 	let c = chars.next();
 	match c {
