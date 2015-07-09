@@ -1,6 +1,6 @@
 extern crate rasp;
 
-use std::io::*;
+//use std::io::*;
 
 fn main() {
     let cons = rasp::cons(rasp::Val::Int(10), 
