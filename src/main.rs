@@ -44,11 +44,16 @@ fn start_write_cons(car : &Val, cdr : &Val, formatter : &mut std::fmt::Formatter
 fn finish_write_cons(val : &Val, formatter : &mut std::fmt::Formatter) -> Result {
     match *val {
         // If we get another cons cell, we write the first item, then recurse
-        Val::Cons(ref car, ref cdr) => formatter.write_str(&format!(" {}", car)).and(finish_write_cons(cdr, formatter)),
+        Val::Cons(ref car, ref cdr) =>
+	    // BUGGO: can't we just call start_write_cons here?
+	    formatter.write_str(&format!(" {}", car))
+	             .and(finish_write_cons(cdr, formatter)),
         // If we get nil, we end the list
-        Val::Nil => formatter.write_str(")"),
+        Val::Nil =>
+	    formatter.write_str(")"),
         // If we get something else, we're finishing a dotted pair.
-        ref someval => formatter.write_str(&format!(" . {})", someval)),
+        ref someval =>
+	    formatter.write_str(&format!(" . {})", someval)),
     }
 }
 
@@ -89,6 +94,8 @@ enum Token {
     Symbol(String),
 }
 
+// TODO: Handle decimals properly
+// TODO: Handle non-base-10 numbers?
 fn tokenize_num(first_char: char, chars : &mut std::str::Chars)  -> i32 {
     let chr_iter = chars.take_while(|x| x.is_digit(10));
     let mut buf = String::new();
@@ -103,20 +110,29 @@ fn tokenize_symbol(first_char: char, chars : &mut std::str::Chars) -> String {
     // Not sure whether it's better to collect() the iterator
     // and then use push_str(), or iterate over it pushing
     // each individual character like this.  I'm guessing this.
+    // BUGGO: Surely we should just be able to use extend_from_slice()
+    // or such here?
+    // Or possibly just Vec::extend()
     let mut buf = String::new();
     buf.push(first_char);
     for chr in chr_iter {buf.push(chr)}
     buf
 }
+
 // Derp.  Go off of first character.  If it's a paren, it's a paren.
 // If it's a string or character, read that, then parse it.
 // If it's something starting a number, read number, then parse it.  
 // If not a number, then a symbol.
-// Otherwise, it's a symbol.
+// We could try to use Peekable<> for this but all my efforts to do
+// so have only come to tears.
 fn tokenize(in_str : &str) -> Vec<Token> {
     let mut chars = in_str.chars();
     let mut tokens : Vec<Token> = Vec::new();
     loop {
+    	// We can't use a for loop here
+	// 'Cause we have to be able to mutate `chars`
+	// when parsing tokens and we can't do that if
+	// the for loop owns `chars`.
         let chr = match chars.next() {
             Some(c) => c,
             None => break,
@@ -131,6 +147,7 @@ fn tokenize(in_str : &str) -> Vec<Token> {
             ')' => {
                 Token::RParen
             },
+	    // BUGGO: This might make tokenizing + and - a bit hard...
             '0'...'9' | '+' | '-' | '.' => 
                 Token::Number(tokenize_num(chr, &mut chars)),
             _other => {
